@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Tópicos{% endblock %}
+{% block content %}
+  <div class="question-list">
+    <h2>{{ inquiries.count }} Preguntas</h2>
+    {% for inq in inquiries %}
+      <div class="question-card">
+        <h3><a href="{% url 'inquiry_detail' inq.pk %}">{{ inq.title }}</a></h3>
+        <p>{{ inq.description }}</p>
+        <div class="question-footer">
+          <span>👤 {{ inq.author.username }}</span>
+          <span>👍 {{ inq.count_positive }}</span>
+          <span>👎 {{ inq.count_negative }}</span>
+        </div>
+      </div>
+    {% empty %}
+      <p>No hay preguntas.</p>
+    {% endfor %}
+  </div>
+{% endblock %}

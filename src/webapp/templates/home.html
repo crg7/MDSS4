@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+  <div class="question-list">
+    {% if inquiries %}
+      <h2>{{ inquiries.count }} Preguntas</h2>
+      {% for inq in inquiries %}
+        <div class="question-card">
+          <h3>
+            <a href="{% url 'inquiry_detail' inq.pk %}">{{ inq.title }}</a>
+          </h3>
+          <p>{{ inq.description }}</p>
+          <div class="question-footer">
+            <span>👤 {{ inq.author.username }}</span>
+            <span>👍 {{ inq.count_positive }}</span>
+            <span>👎 {{ inq.count_negative }}</span>
+          </div>
+        </div>
+      {% endfor %}
+    {% else %}
+      <h2>3 Preguntas de Ejemplo</h2>
+      <!-- Hardcodeadas para ejemplificar interfaz -->
+      <!-- Ejemplo 1 -->
+      <div class="question-card">
+        <h3>¿Cómo mejorar la productividad personal en el trabajo remoto?</h3>
+        <p>Establecer una rutina, usar herramientas de gestión de tareas y separar espacios de trabajo.</p>
+        <div class="question-footer">
+          <span>👤 UsuarioDeEjemplo</span>
+          <span>👍 34 votos positivos</span>
+          <span>👎 12 votos negativos</span>
+        </div>
+      </div>
+
+      <!-- Ejemplo 2 -->
+      <div class="question-card">
+        <h3>¿Qué libros de desarrollo personal me recomiendas leer?</h3>
+        <p>“Los 7 hábitos de la gente altamente efectiva”, “El poder del ahora” y “Piensa y hazte rico”.</p>
+        <div class="question-footer">
+          <span>👤 UsuarioDeEjemplo2</span>
+          <span>👍 45 votos positivos</span>
+          <span>👎 5 votos negativos</span>
+        </div>
+      </div>
+
+      <!-- Ejemplo 3 -->
+      <div class="question-card">
+        <h3>¿Cuáles son las tendencias de marketing digital para 2025?</h3>
+        <p>IA para experiencias personalizadas, auge del vídeo y protagonismo de mensajería.</p>
+        <div class="question-footer">
+          <span>👤 UsuarioDeEjemplo3</span>
+          <span>👍 60 votos positivos</span>
+          <span>👎 8 votos negativos</span>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}

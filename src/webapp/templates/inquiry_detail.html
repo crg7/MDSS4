@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}{{ inquiry.title }}{% endblock %}
+{% block content %}
+  <div class="question-list">
+    <div class="question-card">
+      <h2>{{ inquiry.title }}</h2>
+      <p>{{ inquiry.description }}</p>
+      <div class="question-footer">
+        <span>👤 {{ inquiry.author.username }}</span>
+        <span>👍 {{ inquiry.count_positive }}</span>
+        <span>👎 {{ inquiry.count_negative }}</span>
+      </div>
+    </div>
+
+    <hr><h3>Respuestas</h3>
+    {% for resp in inquiry.responses.all %}
+      <div class="question-card {% if resp.author == request.user %}own-answer{% endif %}">
+        <p>{{ resp.description }}</p>
+        <div class="question-footer">
+          <span>👤 {{ resp.author.username }}</span>
+          <span>👍 {{ resp.count_positive }}</span>
+          <span>👎 {{ resp.count_negative }}</span>
+        </div>
+      </div>
+    {% empty %}
+      <p>No hay respuestas aún.</p>
+    {% endfor %}
+
+    {% if request.user.is_authenticated %}
+      <button class="add-question-btn" onclick="openPopup()">➕ Añadir Respuesta</button>
+      <!-- reutiliza el mismo popup de base.html -->
+    {% endif %}
+  </div>
+{% endblock %}

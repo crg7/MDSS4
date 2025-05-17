@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}🎉 Bienvenido a CuOOra{% endblock %}
+
+{% block content %}
+<section class="min-h-[60vh] flex flex-col md:flex-row items-center justify-center px-6 md:space-x-12 space-y-6 md:space-y-0">
+
+  <div class="md:w-1/2 flex justify-center">
+    <img src="{% static 'question.png' %}" alt="Icono de pregunta" class="w-56 h-56 animate-fade-in" />
+  </div>
+
+  <div class="md:w-1/2 flex flex-col justify-center items-center md:items-start text-center md:text-left">
+    <h1 class="text-5xl md:text-6xl font-extrabold italic uppercase tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-pink-500 via-purple-600 to-indigo-500">
+      Explora el Conocimiento
+    </h1>
+    <p class="mt-6 text-2xl md:text-3xl font-light leading-relaxed text-purple-600 dark:text-purple-300 max-w-lg">
+      Sumérgete en preguntas fascinantes y comparte tu sabiduría en nuestra comunidad única.
+    </p>
+  </div>
+</section>
+
+<section class="px-6 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-3xl font-semibold">❓ Preguntas Destacadas</h2>
+    <form method="get" id="recommenderForm" class="inline-flex">
+      <select name="recommender" id="recommenderSelect"
+              class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 transition"
+              onchange="this.form.submit()">
+        <option value="general" {% if active_recommender == 'general' %}selected{% endif %}>🗺 Todo</option>
+        <option value="social"  {% if active_recommender == 'social'  %}selected{% endif %}>👥 Social</option>
+        <option value="topic"   {% if active_recommender == 'topic'   %}selected{% endif %}>📚 Temas</option>
+        <option value="news"    {% if active_recommender == 'news'    %}selected{% endif %}>📰 Recientes</option>
+        <option value="popular" {% if active_recommender == 'popular' %}selected{% endif %}>🔥 Populares Hoy</option>
+      </select>
+    </form>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for p in preguntas %}
+    <div class="bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 shadow hover:shadow-lg transform hover:scale-105 transition cursor-pointer">
+      <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">❓ {{ p.title }}</h3>
+      <p class="text-gray-700 dark:text-gray-300 truncate mb-4">{{ p.description|truncatewords:20 }}</p>
+      <div class="mt-4 flex space-x-3 text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <span class="flex items-center space-x-1">👍 <span>{{ p.positive_votes_count|default:0 }}</span></span>
+        <span class="flex items-center space-x-1">👎 <span>{{ p.negative_votes_count|default:0 }}</span></span>
+      </div>
+      <div class="flex justify-between items-center">
+        <a href="{% url 'responder_pregunta' pk=p.id %}"
+           class="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition">
+          ✍️ Responder
+        </a>
+        <p class="text-xs text-gray-500 dark:text-gray-400">Por <strong>{{ p.user.username }}</strong></p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="text-center mt-8">
+    <a href="{% url 'questions_list' %}"
+       class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+      Ver todas las preguntas
+    </a>
+  </div>
+</section>
+
+<section class="px-6 py-8">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-3xl font-semibold">🔥 Topics Destacados</h2>
+    <form method="get" id="topicFilterForm" class="inline-flex">
+      <select name="topic_order" id="topicSelect"
+              class="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 transition"
+              onchange="this.form.submit()">
+        <option value="popular" {% if active_topic_order == 'popular' %}selected{% endif %}>⭐ Más Populares</option>
+        <option value="alfabetico" {% if active_topic_order == 'alfabetico' %}selected{% endif %}>🔤 A–Z</option>
+      </select>
+    </form>
+  </div>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for t in topics %}
+    <div onclick="openTopicModal({{ t.id }})"
+         class="group bg-gray-50 dark:bg-gray-700 rounded-2xl p-6 shadow hover:shadow-lg transform hover:scale-105 transition cursor-pointer">
+      <h3 class="text-lg font-medium text-gray-900 dark:text-white group-hover:text-pink-500 mb-1">📚 {{ t.name }}</h3>
+      <p class="text-gray-700 dark:text-gray-300 truncate">{{ t.description|truncatewords:20 }}</p>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="text-center mt-8">
+    <a href="{% url 'topics' %}"
+       class="px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+      Ver todos los topics
+    </a>
+  </div>
+</section>
+{% endblock %}

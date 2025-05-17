@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}❓ Todas las preguntas{% endblock %}
+{% block content %}
+<main class="p-6 space-y-6">
+
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <h2 class="text-2xl font-semibold">❓ Preguntas ({{ preguntas|length }})</h2>
+    <input
+      id="searchInput"
+      type="text"
+      placeholder="🔍 Buscar preguntas..."
+      class="w-full sm:w-64 p-2 rounded border focus:ring-purple-400 focus:border-purple-500 transition"
+    />
+    <form method="get" id="recommenderForm">
+      <select
+        name="recommender"
+        id="recommenderSelect"
+        class="p-2 rounded border focus:ring-purple-400 focus:border-purple-500 transition"
+        onchange="this.form.submit()"
+      >
+        <option value="general"   {% if active_recommender == 'general' %}selected{% endif %}>🗺 Todo</option>
+        <option value="social"    {% if active_recommender == 'social'  %}selected{% endif %}>👥 Social</option>
+        <option value="topic"     {% if active_recommender == 'topic'   %}selected{% endif %}>📚 Temas</option>
+        <option value="news"      {% if active_recommender == 'news'    %}selected{% endif %}>📰 Recientes</option>
+        <option value="popular"   {% if active_recommender == 'popular' %}selected{% endif %}>🔥 Populares</option>
+      </select>
+    </form>
+  </div>
+
+  <div id="questionsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for q in preguntas %}
+    <div class="question-card bg-gray-50 dark:bg-gray-700 rounded-xl shadow p-5 hover:shadow-lg transition">
+      <h3 class="question-title text-lg font-bold text-gray-900 dark:text-white mb-2">❓ {{ q.title }}</h3>
+      <p class="question-desc text-gray-700 dark:text-gray-300 truncate mb-4">{{ q.description|truncatewords:20 }}</p>
+
+      <div class="flex space-x-3 mb-4 text-sm text-gray-500 dark:text-gray-400">
+        <button type="button"
+                class="like-btn flex items-center space-x-1"
+                data-id="{{ q.id }}"
+                onclick="event.stopPropagation(); handleVote(this,'like');">
+          👍 <span id="card-like-count-{{ q.id }}" class="ml-1">{{ q.positive_votes_count }}</span>
+        </button>
+        <button type="button"
+                class="dislike-btn flex items-center space-x-1"
+                data-id="{{ q.id }}"
+                onclick="event.stopPropagation(); handleVote(this,'dislike');">
+          👎 <span id="card-dislike-count-{{ q.id }}" class="ml-1">{{ q.negative_votes_count }}</span>
+        </button>
+      </div>
+
+      <div class="flex justify-between items-center">
+        <p class="text-xs text-gray-500 dark:text-gray-400">
+          Publicado por <strong>{{ q.user.username }}</strong>
+        </p>
+        <a
+          href="{% url 'responder_pregunta' pk=q.id %}"
+          class="px-3 py-1 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition"
+        >
+          ✍️ Responder
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</main>
+
+<script>
+  const searchInput = document.getElementById('searchInput');
+  const cards = Array.from(document.querySelectorAll('.question-card'));
+
+  searchInput.addEventListener('input', () => {
+    const term = searchInput.value.trim().toLowerCase();
+    cards.forEach(card => {
+      const title = card.querySelector('.question-title').textContent.toLowerCase();
+      const desc  = card.querySelector('.question-desc').textContent.toLowerCase();
+      card.style.display = (title.includes(term) || desc.includes(term)) ? '' : 'none';
+    });
+  });
+
+  function getCookie(name) {
+    const v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+
+  function handleVote(btn, type) {
+    const id = btn.dataset.id;
+    fetch(`/api/pregunta/${id}/vote/`, {
+      method: 'POST',
+      headers: { 'X-CSRFToken': getCookie('csrftoken') },
+      body: new URLSearchParams({ vote: type })
+    })
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById(`card-like-count-${id}`).textContent    = data.positive_votes;
+      document.getElementById(`card-dislike-count-${id}`).textContent = data.negative_votes;
+    });
+  }
+</script>
+{% endblock %}

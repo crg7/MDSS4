@@ -1,0 +1,63 @@
+services:
+  app:
+    build:
+      context: .
+    container_name: webapp-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./webapp:/home/app
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py makemigrations &&
+             python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
+    depends_on:
+      - db
+      - redis
+    env_file: ".env_local"
+
+  db:
+    image: postgres:13-alpine
+    container_name: webapp-postgresql
+    env_file: ".env_local"
+
+  redis:
+    image: redis:alpine
+    container_name: redis-webapp
+
+  celery-worker:
+    build:
+      context: .
+    container_name: celery-worker-webapp
+    working_dir: /home/app
+    command: celery -A app worker --loglevel=DEBUG
+    volumes:
+      - ./webapp:/home/app
+    depends_on:
+      - app
+      - redis
+      - db
+    env_file: ".env_local"
+    environment:
+      - DJANGO_SETTINGS_MODULE=app.settings
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  celery-beat:
+    build:
+      context: .
+    container_name: celery-beat-webapp
+    working_dir: /home/app
+    command: celery -A app beat --loglevel=DEBUG
+    volumes:
+      - ./webapp:/home/app
+    depends_on:
+      - app
+      - redis
+      - db
+    env_file: ".env_local"
+    environment:
+      - DJANGO_SETTINGS_MODULE=app.settings
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

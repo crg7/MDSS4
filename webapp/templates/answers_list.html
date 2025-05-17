@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}💬 Respuestas{% endblock %}
+{% block content %}
+<main class="p-6 space-y-6">
+  <h2 class="text-2xl font-semibold">💬 Respuestas publicadas ({{ answers|length }})</h2>
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for ans in answers %}
+    <div class="bg-gray-50 dark:bg-gray-700 rounded-xl shadow p-5 hover:shadow-lg transition">
+      <p class="font-medium text-gray-900 dark:text-white mb-2">👤 {{ ans.user.username }} responde:</p>
+      <p class="text-gray-700 dark:text-gray-300 mb-4 truncate">{{ ans.description|truncatewords:25 }}</p>
+
+      <div class="flex space-x-4 mb-4 text-sm text-gray-500 dark:text-gray-400">
+        <button type="button"
+                class="like-btn flex items-center space-x-1"
+                data-id="{{ ans.id }}"
+                onclick="event.stopPropagation(); handleAnswerVote(this,'like');">
+          👍 <span id="ans-like-count-{{ ans.id }}" class="ml-1">{{ ans.positive_votes_count }}</span>
+        </button>
+        <button type="button"
+                class="dislike-btn flex items-center space-x-1"
+                data-id="{{ ans.id }}"
+                onclick="event.stopPropagation(); handleAnswerVote(this,'dislike');">
+          👎 <span id="ans-dislike-count-{{ ans.id }}" class="ml-1">{{ ans.negative_votes_count }}</span>
+        </button>
+      </div>
+
+      <a href="{% url 'responder_pregunta' pk=ans.question.pk %}"
+         class="inline-block px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg hover:opacity-90 transition">
+        ✍️ Ver pregunta
+      </a>
+    </div>
+    {% endfor %}
+  </div>
+</main>
+
+<script>
+  function getCookie(name) {
+    let v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+  function handleAnswerVote(btn, type) {
+    const id = btn.dataset.id;
+    fetch(`/api/respuesta/${id}/vote/`, {
+      method: 'POST',
+      headers: {'X-CSRFToken': getCookie('csrftoken')},
+      body: new URLSearchParams({vote: type})
+    })
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById(`ans-like-count-${id}`).textContent    = data.positive_votes;
+      document.getElementById(`ans-dislike-count-${id}`).textContent = data.negative_votes;
+    });
+  }
+</script>
+{% endblock %}

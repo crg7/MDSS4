@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}📚 Topics{% endblock %}
+{% block content %}
+<main class="max-w-7xl mx-auto p-6 space-y-6">
+  <div class="flex items-center justify-between">
+    <h2 class="text-2xl font-semibold">📚 Topics ({{ topics|length }})</h2>
+    <input id="topicSearchInput"
+           type="text"
+           placeholder="🔍 Buscar topic"
+           class="p-2 rounded border focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+    />
+    <form method="get" id="topicFilterForm">
+      <select name="topic_order"
+              id="topicSelect"
+              class="p-2 rounded border focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition"
+              onchange="this.form.submit()">
+        <option value="popular"   {% if active_topic_order == 'popular'   %}selected{% endif %}>⭐ Más populares</option>
+        <option value="recientes" {% if active_topic_order == 'recientes' %}selected{% endif %}>🆕 Recientes</option>
+        <option value="alfabetico"{% if active_topic_order == 'alfabetico'%}selected{% endif %}>🔤 A–Z</option>
+      </select>
+    </form>
+  </div>
+  <div id="topicsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {% for topic in topics %}
+    <div data-id="{{ topic.id }}" class="topic-card bg-white dark:bg-gray-800 rounded-xl shadow p-5 hover:shadow-lg transition cursor-pointer">
+      <h3 class="topic-name text-lg font-bold mb-1 text-pink-500 dark:text-pink-300">📚 {{ topic.name }}</h3>
+      <p class="topic-desc text-gray-600 dark:text-gray-400 truncate">{{ topic.description|truncatewords:20 }}</p>
+      <p class="text-sm text-gray-500 mt-2 text-right">{{ topic.questions.count }} pregunta{{ topic.questions.count|pluralize }}</p>
+    </div>
+    {% endfor %}
+  </div>
+</main>
+
+<script>
+  const topicInput = document.getElementById('topicSearchInput');
+  const topicCards = Array.from(document.querySelectorAll('.topic-card'));
+  topicInput.addEventListener('input', () => {
+    const term = topicInput.value.trim().toLowerCase();
+    topicCards.forEach(card => {
+      const name = card.querySelector('.topic-name').textContent.toLowerCase();
+      const desc = card.querySelector('.topic-desc').textContent.toLowerCase();
+      card.style.display = (name.includes(term) || desc.includes(term)) ? '' : 'none';
+    });
+  });
+</script>
+{% endblock %}

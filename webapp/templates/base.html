@@ -1,0 +1,91 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-gradient-to-b from-pink-50 to-purple-50">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}CuOOra✨{% endblock %}</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    @keyframes fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade-in { animation: fade-in 0.5s ease-out; }
+  </style>
+</head>
+<body class="flex flex-col h-full text-gray-800">
+
+  <header class="sticky top-0 z-50 bg-gradient-to-r from-purple-600 to-pink-500 shadow-lg">
+    <div class="container mx-auto flex items-center justify-between px-6 py-4">
+      <a href="{% url 'home' %}" class="text-4xl font-extrabold text-white hover:scale-105 transform transition">
+        CuOOra ✨
+      </a>
+      <nav class="flex items-center space-x-4 text-white">
+        <a href="{% url 'topics' %}" class="hover:text-yellow-300">📚 Topics</a>
+        <a href="{% url 'questions_list' %}" class="hover:text-yellow-300">❓ Preguntas</a>
+        <a href="{% url 'answers_list' %}" class="hover:text-yellow-300">💬 Respuestas</a>
+        <a href="{% url 'crear_pregunta' %}" class="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-200 rounded-lg font-semibold text-purple-700 hover:from-yellow-300 hover:to-yellow-100 transition">
+          ✏️ Crear Pregunta
+        </a>
+        <a href="{% url 'notifications_view' %}" class="relative">
+          🔔
+          {% if user.notifications.count %}
+            <span class="absolute -top-1 -right-2 bg-red-500 text-xs rounded-full px-1">{{ user.notifications.count }}</span>
+          {% endif %}
+        </a>
+        {% if user.is_authenticated %}
+        <div class="relative">
+          <button id="userMenuBtn" class="px-3 py-1 bg-white bg-opacity-20 backdrop-blur rounded-lg hover:bg-opacity-30 transition">
+            {{ user.username }}
+          </button>
+          <div id="userMenu" class="absolute right-0 mt-2 w-48 bg-white bg-opacity-90 backdrop-blur rounded-lg shadow-lg hidden">
+            <div class="p-4 text-sm text-gray-800">
+              <p class="font-semibold">{{ user.username }}</p>
+              <p class="truncate">{{ user.email }}</p>
+            </div>
+            <div class="border-t border-gray-200">
+              <form method="post" action="{% url 'logout' %}" class="p-2">
+                {% csrf_token %}
+                <button type="submit" class="w-full text-left bg-red-500 text-white rounded px-2 py-1 hover:bg-red-600 transition">
+                  🚪 Cerrar Sesión
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <a href="{% url 'login' %}" class="px-4 py-2 border border-white rounded-lg hover:bg-white hover:text-purple-600 transition">
+          🔑 Iniciar sesión
+        </a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+
+  <main class="flex-grow container mx-auto px-6 py-8">
+    <div class="bg-white rounded-2xl shadow-xl p-6 animate-fade-in">
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+
+  <footer class="bg-gradient-to-r from-pink-200 to-purple-200 border-t border-purple-300">
+    <div class="container mx-auto px-6 py-6 text-center text-purple-800">
+      © {{ now.year }} Carlos Rangel García 🚀
+    </div>
+  </footer>
+
+  <script src="{% static 'js/questions.js' %}"></script>
+  {% block extra_scripts %}{% endblock %}
+
+  <script>
+    const btn = document.getElementById('userMenuBtn');
+    const menu = document.getElementById('userMenu');
+    btn?.addEventListener('click', () => menu.classList.toggle('hidden'));
+    window.addEventListener('click', e => {
+      if (!btn?.contains(e.target) && !menu?.contains(e.target)) menu?.classList.add('hidden');
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}✍️ Responder{% endblock %}
+{% block content %}
+<main class="p-6 max-w-2xl mx-auto space-y-6 bg-gray-50 dark:bg-gray-700 rounded-xl shadow-lg animate-fade-in">
+  <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">❓ {{ question.title }}</h2>
+  <p class="text-gray-700 dark:text-gray-300">{{ question.description }}</p>
+  <small class="text-gray-500 dark:text-gray-400">Escrita por: {{ question.user.username }}</small>
+
+  <form method="post" class="space-y-4">
+    {% csrf_token %}
+    <textarea name="description" rows="4"
+              class="w-full px-4 py-2 rounded-lg border focus:ring-2 focus:ring-purple-500 transition"
+              placeholder="Tu respuesta..."></textarea>
+    <button type="submit"
+            class="px-6 py-2 bg-gradient-to-r from-green-400 to-green-200 text-green-800 rounded-lg hover:opacity-90 transition">
+      ✅ Publicar
+    </button>
+  </form>
+
+  <div class="space-y-4">
+    <h3 class="text-xl font-semibold text-gray-900 dark:text-white">💬 Respuestas</h3>
+    {% for r in respuestas %}
+    <div class="bg-gray-50 dark:bg-gray-700 rounded-xl shadow p-4 hover:shadow-lg transition">
+      <p class="text-gray-700 dark:text-gray-300">{{ r.description }}</p>
+      <small class="text-gray-500 dark:text-gray-400">— {{ r.user.username }}</small>
+
+      <div class="flex space-x-4 mt-2 text-sm text-gray-500 dark:text-gray-400">
+        <button type="button"
+                class="like-btn flex items-center space-x-1"
+                data-id="{{ r.id }}"
+                onclick="event.stopPropagation(); handleAnswerVote(this,'like');">
+          👍 <span id="ans-like-count-{{ r.id }}" class="ml-1">{{ r.positive_votes_count }}</span>
+        </button>
+        <button type="button"
+                class="dislike-btn flex items-center space-x-1"
+                data-id="{{ r.id }}"
+                onclick="event.stopPropagation(); handleAnswerVote(this,'dislike');">
+          👎 <span id="ans-dislike-count-{{ r.id }}" class="ml-1">{{ r.negative_votes_count }}</span>
+        </button>
+      </div>
+    </div>
+    {% empty %}
+      <p class="text-gray-500 dark:text-gray-400">Aún no hay respuestas.</p>
+    {% endfor %}
+  </div>
+</main>
+
+<script>
+  function getCookie(name) {
+    let v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+    return v ? v.pop() : '';
+  }
+  function handleAnswerVote(btn, type) {
+    const id = btn.dataset.id;
+    fetch(`/api/respuesta/${id}/vote/`, {
+      method: 'POST',
+      headers: {'X-CSRFToken': getCookie('csrftoken')},
+      body: new URLSearchParams({vote: type})
+    })
+    .then(r => r.json())
+    .then(data => {
+      document.getElementById(`ans-like-count-${id}`).textContent    = data.positive_votes;
+      document.getElementById(`ans-dislike-count-${id}`).textContent = data.negative_votes;
+    });
+  }
+</script>
+{% endblock %}
